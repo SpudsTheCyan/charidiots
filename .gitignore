@@ -1,1 +1,4 @@
 /charidiots-linux-venv
+launch.json
+.env
+__pycache__/
