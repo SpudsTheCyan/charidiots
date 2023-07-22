@@ -14,7 +14,7 @@ bot = discord.Bot(debug_guilds=[364162646737682441], intents=discord.Intents.def
 async def on_connect():
 	print (f'\n{bot.user} has connected to Discord!')
 	# loads the commands
-	bot.load_extension('cogs.commands')
+	bot.load_extension('cogs.game_logic')
 	await bot.sync_commands()
 
 # prints what guilds the bot is connected to

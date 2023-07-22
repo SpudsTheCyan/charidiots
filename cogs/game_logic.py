@@ -1,5 +1,4 @@
 from random import choice
-from uuid import uuid4
 import discord
 from discord.ext import commands
 from tinydb import TinyDB, where
@@ -10,7 +9,7 @@ ag_table = db.table("active_games")
 
 words = [
 	"no mans sky", "charmander", "bulbasaur", "squirtle", "chuck norris", "spanish inquisition", "minecraft", "triforce",
-	"water", "emoji", "jim", "ur mom", "eevee", "you", "dungeons and dragons", "python", "racism", "pokemon", " ", "eggplant",
+	"water", "emoji", "jim", "ur mom", "eevee", "you", "dungeons and dragons", "python", "racism", "pokemon", "eggplant",
 	"copy", "cringe", "kill yourself", "intrusive thoughts", "kyrgyzstan", "bystander", "jury duty", "shrek", "charidiots",
 	"supercalifragilisticexpialidocious", "7", "titanfall", "mario", "tetris", "minesweeper", "discord", "wumpus", "kirby", "cola",
 	"socialized medicne", "capitaslism", "communism", "public", "extisental crisis", "satan", "god", "crusades", "murder", "harambe",
@@ -22,7 +21,7 @@ words = [
 # purges the table of all active games, so that unexpected restarts wont leave broken data
 ag_table.truncate()
 
-class Commands(commands.Cog):
+class GameLogic(commands.Cog):
 	def __init__(self, bot_):
 		self.bot = bot_
 
@@ -35,16 +34,12 @@ class Commands(commands.Cog):
 		self,
 		ctx,
 	):
-		if (ctx.user.nick != None):
-			author_name = ctx.author.nick
-		else:
-			author_name = ctx.author.display_name
-
+		# picks the word at random from the words list
 		word = choice(words)
 
 		# makes the thread and links it in the chat
 		channel_id = ctx.channel.id
-		thread = await ctx.channel.create_thread(name=f"{author_name}'s Charidiots game",type=discord.ChannelType.public_thread)
+		thread = await ctx.channel.create_thread(name=f"{ctx.author.display_name}'s Charidiots game",type=discord.ChannelType.public_thread)
 		await ctx.respond(f":arrow_down: :arrow_down: Starting game in the thread! :arrow_down: :arrow_down:\nhttps://discord.com/channels/{ctx.channel.id}/{thread.id}")
 		await ctx.respond(content=f"Your word is: `{word}`", ephemeral=True)
 
@@ -53,8 +48,9 @@ class Commands(commands.Cog):
 
 		# makes a database entry for the current game
 		# ag_table.insert({"game_id": id,"thread_id": thread_id,"author_username": author_username, "hints":0})
-		ag_table.insert({"thread_id": thread.id, "channel_id": channel_id, "author_username": ctx.author.name, "word": word, "hints":0}) # not sure i need a game id anymore
+		ag_table.insert({"thread_id": thread.id, "channel_id": channel_id, "author_username": ctx.author.display_name, "word": word, "hints":0}) # not sure i need a game id anymore
 
+	# command to allow players to guess the phrase
 	@discord.slash_command(
 		name="guess",
 		description="Guesses the word"
@@ -64,11 +60,6 @@ class Commands(commands.Cog):
 		ctx,
 		guess: discord.Option(str,"Your word guess")
 	):
-		if (ctx.user.nick != None):
-			guesser_name = ctx.author.nick
-		else:
-			guesser_name = ctx.author.display_name
-
 		query_result = ag_table.search(where("thread_id") == ctx.channel_id)
 
 		if query_result[0]['word'] == guess.lower():
@@ -85,4 +76,4 @@ class Commands(commands.Cog):
 			await ctx.respond(f"Incorrect! The word was not `{guess.lower()}` Keep guessing!")
 
 def setup(bot):
-	bot.add_cog(Commands(bot))
+	bot.add_cog(GameLogic(bot))
