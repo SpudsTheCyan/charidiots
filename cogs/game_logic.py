@@ -40,15 +40,16 @@ class GameLogic(commands.Cog):
 		# makes the thread and links it in the chat
 		channel_id = ctx.channel.id
 		thread = await ctx.channel.create_thread(name=f"{ctx.author.display_name}'s Charidiots game",type=discord.ChannelType.public_thread)
+		hint_message = await thread.send("Your hints are:")
 		await ctx.respond(f":arrow_down: :arrow_down: Starting game in the thread! :arrow_down: :arrow_down:\nhttps://discord.com/channels/{ctx.channel.id}/{thread.id}")
-		await ctx.respond(content=f"Your word is: `{word}`", ephemeral=True)
+		await ctx.respond(content=f"Your word is: `{word}`\nReact to the first message in the thread to give your hints!\n**Typing in the thread chat or reacting to other messages in the thread will instantly set your score to 0!**", ephemeral=True)
 
 		# # assigns a random id to the current game
 		# id = str(uuid4())
 
 		# makes a database entry for the current game
 		# ag_table.insert({"game_id": id,"thread_id": thread_id,"author_username": author_username, "hints":0})
-		ag_table.insert({"thread_id": thread.id, "channel_id": channel_id, "author_username": ctx.author.display_name, "word": word, "hints":0}) # not sure i need a game id anymore
+		ag_table.insert({"thread_id": thread.id, "channel_id": channel_id, "author_username": ctx.author.name, "word": word, "hints":0}) # not sure i need a game id anymore
 
 	# command to allow players to guess the phrase
 	@discord.slash_command(
@@ -69,11 +70,21 @@ class GameLogic(commands.Cog):
 			await thread.edit(
 				archived=True
 			)
-			await channel.send(content=f"{ctx.author.mention} guessed the word! It was `{query_result[0]['word']}`!")
+			await channel.send(content=f"{ctx.author.mention} guessed the word! It was `{query_result[0]['word']}`!") # maybe make this silent?
 			ag_table.remove(where("thread_id") == thread.id)
 
 		else:
 			await ctx.respond(f"Incorrect! The word was not `{guess.lower()}` Keep guessing!")
+
+	# uses the typing event to see if the author is trying to send a message
+	@commands.Cog.listener()
+	async def on_raw_typing(self, payload):
+		query_result = ag_table.search(where("thread_id") == payload.channel_id)
+		thread = await self.fetch_thread(query_result[0])
+
+		if thread.id == payload.channel_id:
+			if await self.fetch_user(payload.user_id).name == (query_result[2]):
+			
 
 def setup(bot):
 	bot.add_cog(GameLogic(bot))
