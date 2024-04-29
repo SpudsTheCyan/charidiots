@@ -2,3 +2,4 @@
 launch.json
 .env
 __pycache__/
+charidiots_db.json
