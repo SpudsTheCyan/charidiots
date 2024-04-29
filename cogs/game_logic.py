@@ -2,7 +2,6 @@ from random import choice
 import discord
 from discord.ext import commands
 from tinydb import TinyDB, where
-import traceback
 
 # opens the active_games database, and makes tables for current games 
 db = TinyDB("data/charidiots_db.json")
@@ -17,6 +16,10 @@ words = [
 	"vehicular manslaughter", "corporate espionage", "electromagnetism", "meh", "area 51 raid", "tardis", "transformers", "constipation",
 	"audience", "quality assurance", "critic", "movie", "pentagon", "lines", "square", "circle", "enigma", "quest", "clorox", "democracy"
 ]
+
+def get_table(thread_id: int):
+	result = agTable.search(where("thread_id") == thread_id)
+	return result
 
 # purges the table of all active games, so that unexpected restarts wont leave broken data
 agTable.truncate()
@@ -34,7 +37,7 @@ class GameLogic(commands.Cog):
 		self,
 		ctx,
 	):
-		queryResultAuthor = agTable.search(where("username") == ctx.author.name)
+		queryResultAuthor = agTable.search(where("username") == ctx.author.name) # change to use get_table()
 		# prevents a new game from starting if the user is already author of an active game or if not in a text channel
 		if not queryResultAuthor and ctx.channel.type == discord.ChannelType.text:
 			# picks the word at random from the words list
@@ -47,7 +50,7 @@ class GameLogic(commands.Cog):
 			hintMessage = await thread.send("Your hints are:")
 			
 			# makes a database entry for the current game
-			agTable.insert({"thread_id": thread.id, "channel_id": ctx.channel.id, "author_username": ctx.author.name, "word": word, "score":0, "cheating": False})
+			agTable.insert({"thread_id": thread.id, "channel_id": ctx.channel.id, "author_username": ctx.author.name, "hint_id": hintMessage.id, "word": word, "score":0, "cheating": False})
 
 	# command to allow players to guess the phrase
 	@discord.slash_command(
@@ -59,7 +62,7 @@ class GameLogic(commands.Cog):
 		ctx,
 		guess: str = discord.Option(description="Your word guess", input_type=discord.SlashCommandOptionType.string)
 	):
-		queryResult = agTable.search(where("thread_id") == ctx.channel_id)
+		queryResult = queryResult = get_table(ctx.channel.id)
 		if queryResult:
 			if queryResult[0]['word'] == guess.lower() and ctx.author.name != queryResult[0]['author_username']:
 				await ctx.respond(f"Correct! The word was `{queryResult[0]['word']}`")
@@ -82,14 +85,10 @@ class GameLogic(commands.Cog):
 		else:
 			await ctx.respond("Use this command in a game thread!", ephemeral=True)
 
-	def check_author():
-		pass
-
 	# detects if the author of the game is cheating
 	@commands.Cog.listener()
 	async def on_message(self, message):
-		# 
-		queryResult = agTable.search(where("thread_id") == message.channel.id)
+		queryResult = get_table(message.channel.id)
 
 		if queryResult: # Check if message was sent in a game thread
 			for result in queryResult:
@@ -97,6 +96,14 @@ class GameLogic(commands.Cog):
 				if message.author.name == (result["author_username"]):
 					agTable.update({'cheating': True}, where("thread_id") == message.channel.id)
 
+	@commands.Cog.listener()
+	async def on_raw_reaction_add(self, payload):
+		queryResult = get_table(payload.channel_id)
+		if queryResult:
+			for result in queryResult:
+				if result['hint_id'] == payload.message_id:
+					score = result['score'] + 1
+					agTable.update({'score':score}, where("hint_id") == payload.message_id)
 
 def setup(bot):
 	bot.add_cog(GameLogic(bot))
