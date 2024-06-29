@@ -12,6 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Test
-
-        run: ssh pi@99.98.11.100 touch ~/testSuccessful
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 99.98.11.100
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: touch ~/testSuccessful
