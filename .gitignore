@@ -3,3 +3,4 @@ launch.json
 .env
 __pycache__/
 /data
+.vscode
