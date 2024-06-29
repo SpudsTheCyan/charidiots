@@ -44,13 +44,24 @@ class GameLogic(commands.Cog):
 			word = choice(words)
 
 			# makes the thread and links it in the chat
-			await ctx.respond(f":arrow_down: :arrow_down: Starting game in the thread! :arrow_down: :arrow_down:")#\nhttps://discord.com/channels/{ctx.channel.id}/{thread.id}")
-			await ctx.respond(content=f"Your word is: `{word}`\nReact to the first message in the thread to give your hints!\n**Typing in the thread chat or reacting to other messages in the thread will instantly set your score to 0!**", ephemeral=True)
+			await ctx.respond(f":arrow_down: :arrow_down: Starting game in the thread! :arrow_down: :arrow_down:")
 			thread = await ctx.channel.create_thread(name=f"{ctx.author.display_name}'s Charidiots game", type=discord.ChannelType.public_thread)
-			hintMessage = await thread.send("Your hints are:")
-			
+			await ctx.respond(content=
+f"""The players need to guess: `{word}`\nReact to the first message in the thread to give your hints!\n
+**Sending messages in the thread chat or reacting to other messages in the thread will instantly set your score to 0!**""", ephemeral=True)
+
+			hintMessage = await thread.send(content="Welcome to **Charidiots**! Whoever started this game, you have been given a word or short phrase, react to this message to give hints to the other players so that they can guess it. Every hint increases your score, and the lower the score, the better you did!\nPlayers, when you think you've solved it, type `/guess` followed by your guess to try and guess the word/phrase!\nYour hints are:")
+
 			# makes a database entry for the current game
-			agTable.insert({"thread_id": thread.id, "channel_id": ctx.channel.id, "author_username": ctx.author.name, "hint_id": hintMessage.id, "word": word, "score":0, "cheating": False})
+			agTable.insert({
+				"thread_id": thread.id,
+				  "channel_id": ctx.channel.id, 
+				  "author_username": ctx.author.name, 
+				  "hint_id": hintMessage.id, 
+				  "word": word, 
+				  "score":0, 
+				  "cheating": False
+				})
 
 	# command to allow players to guess the phrase
 	@discord.slash_command(
@@ -63,27 +74,30 @@ class GameLogic(commands.Cog):
 		guess: str = discord.Option(description="Your word guess", input_type=discord.SlashCommandOptionType.string)
 	):
 		queryResult = queryResult = get_table(ctx.channel.id)
-		if queryResult:
-			if queryResult[0]['word'] == guess.lower() and ctx.author.name != queryResult[0]['author_username']:
-				await ctx.respond(f"Correct! The word was `{queryResult[0]['word']}`")
-				thread = self.bot.get_channel(queryResult[0]['thread_id'])
-				channel = self.bot.get_channel(queryResult[0]['channel_id'])
-				await thread.edit(
-					archived=True
-				)
-				
-				if queryResult[0]['cheating']:
-					score = 999
-				else: 
-					score = queryResult[0]['score']
 
-				await channel.send(content=f"{ctx.author.mention} guessed the word! It was `{queryResult[0]['word']}`!\n Score: {score}") # maybe make this silent?
-				agTable.remove(where("thread_id") == thread.id)
-
-			else:
-				await ctx.respond(f"Incorrect! The word was not `{guess.lower()}` Keep guessing!")
-		else:
+		if not queryResult:
 			await ctx.respond("Use this command in a game thread!", ephemeral=True)
+			return
+		
+		if ctx.author.name == queryResult[0]['author_username']:
+			await ctx.respond("You cannot guess in your own game!", ephemeral=True)
+			return
+
+		if queryResult[0]['word'] == guess.lower():
+			await ctx.respond(f"Correct! The word was `{queryResult[0]['word']}`")
+			thread = self.bot.get_channel(queryResult[0]['thread_id'])
+			channel = self.bot.get_channel(queryResult[0]['channel_id'])
+			await thread.edit(
+				archived=True
+			)
+			
+			if queryResult[0]['cheating']:
+				score = 999
+			else: 
+				score = queryResult[0]['score']
+
+			await channel.send(content=f"{ctx.author.mention} guessed the word! It was `{queryResult[0]['word']}`!\n Score: {score}") # maybe make this silent?
+			agTable.remove(where("thread_id") == thread.id)
 
 	# detects if the author of the game is cheating
 	@commands.Cog.listener()
@@ -95,6 +109,8 @@ class GameLogic(commands.Cog):
 				# checks if the message was sent by the author
 				if message.author.name == (result["author_username"]):
 					agTable.update({'cheating': True}, where("thread_id") == message.channel.id)
+					thread = self.bot.get_channel(message.channel.id)
+					await thread.send("Cheating detected!")
 
 	@commands.Cog.listener()
 	async def on_raw_reaction_add(self, payload):
