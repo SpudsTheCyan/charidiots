@@ -1,7 +1,8 @@
 name: Dev Docker Runner
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [beta]
 
 jobs:
   run:
