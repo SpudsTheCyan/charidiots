@@ -1,0 +1,17 @@
+name: Dev Docker Runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      BOT_TOKEN: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Test
+
+        run: ssh pi@99.98.11.100 touch ~/testSuccessful
