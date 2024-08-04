@@ -1,8 +1,9 @@
 name: Test Runner
 
 on:
-  push:
-    branches: [ beta ]
+  # push:
+  #   branches: [ beta ]
+  workflow_dispatch:
 
 jobs:
   run:
