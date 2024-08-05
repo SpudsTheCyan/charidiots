@@ -2,7 +2,7 @@ version: '3.8'
 services:
   main:
     build: .
-    container_name: charidiots
+    container_name: charidiots-live
     environment:
       - BOT_TOKEN=${BOT_TOKEN}
     restart: unless-stopped
