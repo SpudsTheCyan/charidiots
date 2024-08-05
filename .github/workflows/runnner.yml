@@ -11,16 +11,11 @@ jobs:
     env:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
     steps:
-      - if: ${{ env.BOT_TOKEN == '' }}
-        run: |
-          echo "Token missing from env!"
-      - if: ${{ env.BOT_TOKEN != '' }}
-        run: |
-          echo "Token found in env!"      
       - uses: appleboy/ssh-action@v1.0.3
         with:
           username: pi
           host: 99.98.11.100
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: 
+          envs: BOT_TOKEN
+          script:
             docker compose -f /home/pi/Bot_Data/charidiots/docker-compose.yml up -d --build && sudo docker image prune -f
