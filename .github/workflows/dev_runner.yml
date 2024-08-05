@@ -16,10 +16,7 @@ jobs:
           echo "Token missing from env!"
       - if: ${{ env.BOT_TOKEN != '' }}
         run: |
-          echo "Token found in env!"
-      - if: ${{ env.BOT_TOKEN == 'test12345' }}
-        run: |
-          echo "tokens match!"
+          echo "Token found in env! token: '$BOT_TOKEN'"
       - uses: appleboy/ssh-action@v1.0.3
         with:
           username: pi
