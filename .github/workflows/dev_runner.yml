@@ -16,6 +16,6 @@ jobs:
           username: pi
           host: 99.98.11.100
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: BOT_TOKEN
           script: 
-            docker compose -f /home/pi/Bot_Data/charidiots/docker-compose.yml up -d --build && sudo docker image prune -f
-    
+            bash /home/pi/Bot_Data/charidiots/deploy.sh beta

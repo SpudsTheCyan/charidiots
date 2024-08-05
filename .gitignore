@@ -1,6 +1,9 @@
 /charidiots-linux-venv
+/charidiots-windows-venv
 launch.json
 .env
 __pycache__/
 /data
 .vscode
+deploy.sh
+.venv

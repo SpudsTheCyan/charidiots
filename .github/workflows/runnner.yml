@@ -2,7 +2,7 @@ name: Docker Build Runner
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   workflow_dispatch:
     
 jobs:
@@ -16,6 +16,6 @@ jobs:
           username: pi
           host: 99.98.11.100
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: 
-            docker compose -f /home/pi/Bot_Data/charidiots/docker-compose.yml up -d --build && sudo docker image prune -f
-    
+          envs: BOT_TOKEN
+          script:
+            bash /home/pi/Bot_Data/charidiots/deploy.sh master
