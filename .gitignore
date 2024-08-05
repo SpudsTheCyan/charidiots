@@ -1,4 +1,5 @@
 /charidiots-linux-venv
+/charidiots-windows-venv
 launch.json
 .env
 __pycache__/
