@@ -11,6 +11,12 @@ jobs:
     env:
       BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
     steps:
+      - if: ${{ env.BOT_TOKEN == '' }}
+        run: |
+          echo "Token missing from env!"
+      - if: ${{ env.BOT_TOKEN != '' }}
+        run: |
+          echo "Token found in env!"      
       - uses: appleboy/ssh-action@v1.0.3
         with:
           username: pi
