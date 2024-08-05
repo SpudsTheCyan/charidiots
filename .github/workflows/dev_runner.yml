@@ -18,4 +18,4 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: BOT_TOKEN
           script: 
-            git switch beta && git pull && docker compose -f /home/pi/Bot_Data/charidiots/docker-compose-dev.yml up -d --build && sudo docker image prune -f
+            docker compose -f /home/pi/Bot_Data/charidiots/docker-compose-dev.yml up -d --build && sudo docker image prune -f
