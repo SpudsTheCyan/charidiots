@@ -1,0 +1,6 @@
+/charidiots-linux-venv
+launch.json
+.env
+__pycache__/
+/data
+.vscode

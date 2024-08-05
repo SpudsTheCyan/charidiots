@@ -1,0 +1,22 @@
+name: Test_Runner
+
+on: 
+  push:
+    branches: [ beta ]
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          username: pi
+          host: 99.98.11.100
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: touch ~/testSuccessful
