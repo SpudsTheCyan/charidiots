@@ -16,6 +16,7 @@ jobs:
 
       - uses: appleboy/ssh-action@v1.0.3
         with:
-          host: pi@99.98.11.100
+          username: pi
+          host: 99.98.11.100
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: touch ~/testSuccessful
