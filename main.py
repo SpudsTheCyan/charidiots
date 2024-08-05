@@ -2,7 +2,7 @@
 import discord, os
 
 # gets bot token from env
-BOT_TOKEN = os.getenv("DISCORD_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 # defines the bot obj (debug_guilds for testing ONLY)
 # IM SERIOUS YOU STUPID ASSHOLE IF YOU DONT REMOVE THIS

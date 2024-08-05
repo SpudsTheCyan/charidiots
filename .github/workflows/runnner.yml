@@ -1,0 +1,21 @@
+name: Docker Build Runner
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          username: pi
+          host: 99.98.11.100
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: 
+            docker compose -f /home/pi/Bot_Data/charidiots/docker-compose.yml up -d --build && sudo docker image prune -f
+    
