@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  main:
+    build: .
+    container_name: charidiots-dev
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+    restart: unless-stopped
+    volumes:
+      - /home/pi/Bot_Data/charidiots-data:/app/data
