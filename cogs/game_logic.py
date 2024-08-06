@@ -37,7 +37,7 @@ class GameLogic(commands.Cog):
 		self,
 		ctx,
 	):
-		queryResultAuthor = agTable.search(where("username") == ctx.author.name) # change to use get_table()
+		queryResultAuthor = agTable.search(where("author_username") == ctx.author.name) # change to use get_table()
 		# prevents a new game from starting if the user is already author of an active game or if not in a text channel
 		if queryResultAuthor == [] and ctx.channel.type == discord.ChannelType.text:
 			# picks the word at random from the words list
@@ -63,7 +63,7 @@ f"""The players need to guess: `{word}`\nReact to the first message in the threa
 				  "cheating": False
 				})
 		else:
-			ctx.respond("Error! Please make sure you are in a text channel and have not started any other games!", ephemeral=True)
+			await 	ctx.respond("Error! Please make sure you are in a text channel and have not started any other games!", ephemeral=True)
 	# command to allow players to guess the phrase
 	@discord.slash_command(
 		name="guess",
