@@ -108,9 +108,10 @@ f"""The players need to guess: `{word}`\nReact to the first message in the threa
 			for result in queryResult:
 				# checks if the message was sent by the author
 				if message.author.name == (result["author_username"]):
+					if not result["cheating"]:
+						thread = self.bot.get_channel(message.channel.id)
+						await thread.send("Cheating detected!")
 					agTable.update({'cheating': True}, where("thread_id") == message.channel.id)
-					thread = self.bot.get_channel(message.channel.id)
-					await thread.send("Cheating detected!")
 
 	@commands.Cog.listener()
 	async def on_raw_reaction_add(self, payload):
